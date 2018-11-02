@@ -31,7 +31,8 @@ API Keys for use with AWS boto api interaction are housed in ansible encrypted f
 
 # How to Run
 To run app issue the following command from com/boto/botoScripts: python awsMenu.py
-Example of menu options:
+
+# Example of menu options:
 1 Create Scalable AWS Architecture.
 2 Delete Scalable AWS Architecture.
 3 Exit
