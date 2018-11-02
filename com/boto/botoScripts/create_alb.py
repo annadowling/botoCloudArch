@@ -1,5 +1,6 @@
 import boto3
 
+
 #
 # (c) 10/10/2018 A.Dowling
 #
@@ -116,25 +117,25 @@ def create_targetgroup(awsvars, elbclient, alb):
     print("Created Target Group: " + targetgroup['TargetGroups'][0]['TargetGroupArn'])
 
     elbclient.modify_target_group_attributes(
-        TargetGroupArn=targetgroup['TargetGroups'][0]['TargetGroupArn'],
         Attributes=[
             {
                 'Key': 'stickiness.enabled',
-                'Value': awsvars['stickinessEnabled'],
+                'Value': 'true',
             },
             {
                 'Key': 'deregistration_delay.timeout_seconds',
-                'Value': awsvars['deregistrationDelay'],
+                'Value': '600',
             },
             {
                 'Key': 'stickiness.type',
-                'Value': awsvars['stickinessType'],
+                'Value': 'lb_cookie',
             },
             {
                 'Key': 'stickiness.lb_cookie.duration_seconds',
-                'Value': awsvars['stickinessDuration'],
+                'Value': 86400,
             },
-        ]
+        ],
+        TargetGroupArn=targetgroup['TargetGroups'][0]['TargetGroupArn']
     )
 
     print("Added sticky session details to target group: " + targetgroup['TargetGroups'][0]['TargetGroupArn'])
