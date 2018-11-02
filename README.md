@@ -24,7 +24,6 @@ The Following packages / tasks need to installed prior to using this project:
 2. Install ansible: sudo yum install ansible
 3. Install pip:  sudo yum install python-pip
 4. sudo python -m pip install boto3
-5. Before running any boto playbooks ensure a group_vars directory is setup with the correct variables for your aws environment (e.g. qaatc, nvqa, newenv etc.). Take a look at the other group_vars files to determine what vars are needed to run the playbooks (these include things like the vpc-id, naming conventions for resources, tags for resources, subnet specifications etc.)
 
 # Credentials
 API Keys for use with AWS boto api interaction are housed in ansible encrypted file com/boto/botoScripts/vault.yml 
