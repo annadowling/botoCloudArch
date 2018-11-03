@@ -382,7 +382,6 @@ def run_delete_script(awsvars, access_key_id, secret_access_key):
     delete_route_table(awsvars['publicRouteTable'], ec2_client)
     delete_route_table(awsvars['privateRouteTable'], ec2_client)
     delete_nat_gateway(awsvars, ec2_client)
-    delete_elastic_ip(awsvars, ec2_client)
     delete_subnet(awsvars['publicSubnet1Name'], ec2_client)
     delete_subnet(awsvars['publicSubnet2Name'], ec2_client)
     delete_subnet(awsvars['privateSubnet1Name'], ec2_client)
@@ -390,3 +389,4 @@ def run_delete_script(awsvars, access_key_id, secret_access_key):
     delete_internet_gateway(awsvars['igName'], awsvars, ec2_client)
     delete_security_groups(awsvars['albSecurityGroupName'], ec2_client)
     delete_vpc(awsvars, ec2_client)
+    delete_elastic_ip(awsvars, ec2_client)
