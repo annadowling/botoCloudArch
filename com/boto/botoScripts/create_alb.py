@@ -132,7 +132,7 @@ def create_targetgroup(awsvars, elbclient, alb):
             },
             {
                 'Key': 'stickiness.lb_cookie.duration_seconds',
-                'Value': 86400,
+                'Value': '86400',
             },
         ],
         TargetGroupArn=targetgroup['TargetGroups'][0]['TargetGroupArn']

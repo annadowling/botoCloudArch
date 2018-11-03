@@ -84,6 +84,7 @@ def delete_autoscaling_group(awsvars, asg_client):
         AutoScalingGroupName=awsvars['autoScalingGroupName'],
         ForceDelete=True
     )
+
     print("Deleted AutoScaling Group: ", asg_response)
 
 
@@ -103,6 +104,8 @@ def delete_alb(awsvars, elbclient):
             awsvars['albName'],
         ]
     )
+
+    print("Load Balancer Is: " + alb['LoadBalancers'][0]['LoadBalancerArn'])
 
     listener = elbclient.describe_listeners(
         LoadBalancerArn=alb['LoadBalancers'][0]['LoadBalancerArn'],
@@ -366,6 +369,7 @@ def run_delete_script(awsvars, access_key_id, secret_access_key):
                              aws_secret_access_key=secret_access_key,
                              region_name=awsvars['region'])
 
+    delete_autoscaling_group(awsvars, asg_client)
     delete_rds(awsvars, rds)
     delete_rds_subnet(awsvars, rds)
     delete_instances(ec2, ec2_client)
@@ -378,11 +382,11 @@ def run_delete_script(awsvars, access_key_id, secret_access_key):
     delete_route_table(awsvars['publicRouteTable'], ec2_client)
     delete_route_table(awsvars['privateRouteTable'], ec2_client)
     delete_nat_gateway(awsvars, ec2_client)
-    delete_security_groups(awsvars['albSecurityGroupName'], ec2_client)
     delete_elastic_ip(awsvars, ec2_client)
     delete_subnet(awsvars['publicSubnet1Name'], ec2_client)
     delete_subnet(awsvars['publicSubnet2Name'], ec2_client)
     delete_subnet(awsvars['privateSubnet1Name'], ec2_client)
     delete_subnet(awsvars['privateSubnet2Name'], ec2_client)
     delete_internet_gateway(awsvars['igName'], awsvars, ec2_client)
+    delete_security_groups(awsvars['albSecurityGroupName'], ec2_client)
     delete_vpc(awsvars, ec2_client)
