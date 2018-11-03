@@ -27,7 +27,21 @@ def delete_rds(awsvars, rds):
         DBInstanceIdentifier=awsvars['rdsDBId'],
         SkipFinalSnapshot=True
     )
+    print("Waiting for RDS Instance Deletion . . .")
+    waiter = rds.get_waiter('db_instance_deleted')
+    waiter.wait(
+        DBInstanceIdentifier=awsvars['rdsDBId'],
+    )
+
     print("Deleted RDS Instance: ", db_response)
+
+
+def delete_rds_subnet(awsvars, rds):
+    sg_response = rds.delete_db_subnet_group(
+        DBSubnetGroupName=awsvars['rdsSubnetGroupName']
+    )
+
+    print("Deleted DB Subnet Group: ", sg_response)
 
 
 def delete_instances(ec2, ec2_client):
@@ -42,6 +56,13 @@ def delete_instances(ec2, ec2_client):
                 instance.id,
             ],
             DryRun=False
+        )
+        print("Waiting for Instance Termination . . . ")
+        waiter = ec2_client.get_waiter('instance_terminated')
+        waiter.wait(
+            InstanceIds=[
+                instance.id,
+            ],
         )
         print("Deleted Instance: ", ec2_response)
 
@@ -104,6 +125,15 @@ def delete_alb(awsvars, elbclient):
     alb_response = elbclient.delete_load_balancer(
         LoadBalancerArn=alb['LoadBalancers'][0]['LoadBalancerArn']
     )
+
+    print("Waiting for Load Balancer Deletion . . .")
+    waiter = elbclient.get_waiter('load_balancers_deleted')
+    waiter.wait(
+        LoadBalancerArns=[
+            alb['LoadBalancers'][0]['LoadBalancerArn'],
+        ],
+    )
+
     print("Deleted Load Balancer: ", alb_response)
 
 
@@ -219,20 +249,18 @@ def delete_route_table(name, ec2_client):
         ],
         DryRun=False
     )
+    print('Association: ', route_table['RouteTables'][0]['Associations'])
+
+    for subnet in route_table['RouteTables'][0]['Associations']:
+        ec2_client.disassociate_route_table(
+            AssociationId=subnet['RouteTableAssociationId']
+        )
 
     rt_response = ec2_client.delete_route_table(
         DryRun=False,
         RouteTableId=route_table['RouteTables'][0]['RouteTableId']
     )
     print("Deleted RouteTable: ", rt_response)
-
-
-def delete_rds_subnet(awsvars, rds):
-    sg_response = rds.delete_db_subnet_group(
-        DBSubnetGroupName=awsvars['rdsSubnetGroupName']
-    )
-
-    print("Deleted DB Subnet Group: ", sg_response)
 
 
 def delete_nat_gateway(awsvars, ec2_client):
@@ -248,7 +276,7 @@ def delete_nat_gateway(awsvars, ec2_client):
     )
 
     nat_response = ec2_client.delete_nat_gateway(
-        NatGatewayId=nat['NatGateway'][0]['NatGatewayId']
+        NatGatewayId=nat['NatGateways'][0]['NatGatewayId']
     )
     print("Deleted NAT: ", nat_response)
 
@@ -264,6 +292,7 @@ def delete_elastic_ip(awsvars, ec2_client):
             },
         ]
     )
+    print('eip is: ', eip)
 
     eip_response = ec2_client.release_address(
         AllocationId=eip['Addresses'][0]['AllocationId']
@@ -337,24 +366,23 @@ def run_delete_script(awsvars, access_key_id, secret_access_key):
                              aws_secret_access_key=secret_access_key,
                              region_name=awsvars['region'])
 
-    delete_autoscaling_group(awsvars, asg_client)
     delete_rds(awsvars, rds)
+    delete_rds_subnet(awsvars, rds)
     delete_instances(ec2, ec2_client)
     delete_cloudwatch_alarms(awsvars, cw_client)
     delete_alb(awsvars, elbclient)
     delete_launch_config(awsvars, asg_client)
     delete_targetgroup(awsvars, elbclient)
-    delete_internet_gateway(awsvars['igName'], awsvars, ec2_client)
     delete_security_groups(awsvars['rdsSecurityGroupName'], ec2_client)
     delete_security_groups(awsvars['applicationSecurityGroupName'], ec2_client)
+    delete_route_table(awsvars['publicRouteTable'], ec2_client)
+    delete_route_table(awsvars['privateRouteTable'], ec2_client)
+    delete_nat_gateway(awsvars, ec2_client)
     delete_security_groups(awsvars['albSecurityGroupName'], ec2_client)
+    delete_elastic_ip(awsvars, ec2_client)
     delete_subnet(awsvars['publicSubnet1Name'], ec2_client)
     delete_subnet(awsvars['publicSubnet2Name'], ec2_client)
     delete_subnet(awsvars['privateSubnet1Name'], ec2_client)
     delete_subnet(awsvars['privateSubnet2Name'], ec2_client)
-    delete_route_table(awsvars['publicRouteTable'], ec2_client)
-    delete_route_table(awsvars['privateRouteTable'], ec2_client)
-    delete_rds_subnet(awsvars, rds)
-    delete_nat_gateway(awsvars, ec2_client)
-    delete_elastic_ip(awsvars, ec2_client)
+    delete_internet_gateway(awsvars['igName'], awsvars, ec2_client)
     delete_vpc(awsvars, ec2_client)
